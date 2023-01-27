@@ -1,3 +1,4 @@
+# WIP eof_slack_bot with rust_actix
 # rust-template-for-vscode-remotecontainers
 
 [![CI](https://github.com/schrosis/rust-template-for-vscode-remotecontainers/actions/workflows/ci.yml/badge.svg)](https://github.com/schrosis/rust-template-for-vscode-remotecontainers/actions/workflows/ci.yml)
