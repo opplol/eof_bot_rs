@@ -73,6 +73,8 @@ jobs:
 
           # SSHのセキュリティグループを開放する
           aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+          #IP確認
+          echo ${{ steps.ip.outputs.ipv4 }}
 
           # SSH接続して、git pullする
           echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
