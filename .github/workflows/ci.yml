@@ -50,6 +50,10 @@ jobs:
         with:
           command: test
           args: -- --show-output
+      # IPの取得
+      - name: Public IP
+        id: ip
+        uses: haythem/public-ip@v1.2
 
       # AWS CLIをインストールする
       - name: AWS CLI install
