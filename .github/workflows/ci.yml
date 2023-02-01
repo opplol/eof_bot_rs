@@ -85,7 +85,7 @@ jobs:
           echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
           chmod 600 private_key
           # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
-          rsync -rv -e 'ssh -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
+          rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
           # 処理を実行
 
           # SSHのセキュリティグループを閉じる
