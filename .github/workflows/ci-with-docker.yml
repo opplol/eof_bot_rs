@@ -3,7 +3,8 @@ name: CI with docker
 
 on:
   # If you want to use Docker to run CI, remove workflow_dispatch: and configure the trigger.
-  push:
+  workflow_dispatch:
+  # push:
 
 jobs:
   docker-build:
