@@ -32,7 +32,7 @@ jobs:
       - name: Build
         uses: actions-rs/cargo@v1
         with:
-          command: build --release
+          command: build
 
       # - name: Run clippy
       #   uses: actions-rs/clippy-check@v1
