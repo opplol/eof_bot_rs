@@ -4,7 +4,8 @@ use log::info;
 use regex::Regex;
 use reqwest::{Client, Error};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{json, Value};
+use std::env;
 
 // #[derive(Deserialize)]
 // struct EofQuery {
@@ -24,6 +25,28 @@ struct SlackEvent {
     user: String,
     channel: String,
 }
+
+#[derive(Serialize, Debug, Clone)]
+struct SlackTextSection {
+    #[serde(rename = "type")]
+    type_me: String,
+    text: SlackTextBody,
+}
+
+#[derive(Serialize, Debug, Clone)]
+struct SlackTextBody {
+    #[serde(rename = "type")]
+    type_me: String,
+    text: String,
+}
+
+// {
+//     "type": "section",
+//     "text": {
+//         "type": "mrkdwn",
+//         "text": format!("*Version : {}*\n EOL: {}\n lastVersion: {} \n", &users[0].cycle, &users[0].eol, &users[0].latest)
+//     },
+// },
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -61,15 +84,72 @@ async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
         }
     };
 
+    let slack_text: Vec<SlackTextSection> = users
+        .iter()
+        .map(|info| {
+            let body = SlackTextBody {
+                type_me: "mrkdwn".to_string(),
+                text: format!(
+                    "*Version : {}*\n EOL: {}\n lastVersion: {} \n",
+                    info.cycle, info.eol, info.latest
+                ),
+            };
+            SlackTextSection {
+                type_me: "section".to_string(),
+                text: body,
+            }
+        })
+        .collect();
+    info!("{:?}", slack_text);
+
     // let test = test(&info.app).await.unwrap_or_default();
     println!("{:?}", users);
 
+    let title: Vec<SlackTextSection> = vec![SlackTextSection {
+        type_me: "section".to_string(),
+        text: SlackTextBody {
+            type_me: "plain_text".to_string(),
+            text: format!("{} EOF INFO", &con_app_name),
+        },
+    }];
+
+    let footer: Vec<SlackTextSection> = vec![SlackTextSection {
+        type_me: "section".to_string(),
+        text: SlackTextBody {
+            type_me: "mrkdwn".to_string(),
+            text: format!(
+                "*<https://endoflife.date/{}|Show more info>*",
+                &con_app_name
+            ),
+        },
+    }];
+
+    let all_text = [title, slack_text, footer].concat();
     let gist_body = json!({
         "channel": Some(&event.channel).unwrap(),
-        "text": users
+        "text": format!("{} EOF INFO", &con_app_name),
+        "blocks": all_text,
+    // "blocks": [
+    //     {
+    //         "type": "section",
+    //         "text": {
+    //             "type": "plain_text",
+    //             "emoji": true,
+    //             "text": format!("{} EOF INFO", &con_app_name)
+    //         }
+    //     },
+        // {
+        //     "type": "section",
+        //     "text": {
+        //         "type": "mrkdwn",
+        //         "text": format!("*<https://endoflife.date/{}|Show more info>*", &con_app_name)
+        //     }
+        // }
+    // ]
+
     });
 
-    let mytoken = "MYTOKEN";
+    let mytoken = env::var("SLACK_TOKEN").unwrap_or_default();
     let request_url = "https://slack.com/api/chat.postMessage";
     let _response = Client::new()
         .post(request_url)
@@ -88,7 +168,7 @@ struct User {
     cycle: String,
     eol: serde_json::Value,
     latest: String,
-    latest_release_date: String,
+    latest_release_date: Option<String>,
     release_date: String,
     lts: serde_json::Value,
 }
@@ -99,23 +179,8 @@ async fn test(product: &str) -> Result<Vec<User>, Error> {
     let response = reqwest::get(&request_url).await?.text().await?;
     // let json_body: serde_json::Value = serde_json::from_str(&response).unwrap();
     let json_body: Vec<User> = serde_json::from_str(&response).unwrap();
-    for a in &json_body {
-        println!("{:?}", a.eol)
-    }
 
     println!("{:?} :: {:?}", response, &json_body);
-    // &json_body.iter().for_each(|a| {
-    //     println!(
-    //         "Cycle: {}, eol: {:?}",
-    //         a.cycle,
-    //         a.eol.as_bool().unwrap_or_default()
-    //     );
-    //     println!(
-    //         "Cycle: {}, eol: {:?}",
-    //         a.cycle,
-    //         a.eol.as_str().unwrap_or_default()
-    //     );
-    // });
     Ok(json_body)
 }
 
