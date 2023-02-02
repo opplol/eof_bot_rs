@@ -25,15 +25,28 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: 1.66
+          toolchain: stable
+          target: x86_64-unknown-linux-musl
           override: true
           components: rustfmt,clippy
 
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --all-features
+      - name: Install native dependencies to compile the app for musl
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libdbus-1-dev pkg-config libssl-dev musl musl-dev musl-tools
+
+      - name: Build app
+        run: cargo build --release --target x86_64-unknown-linux-musl
+      # - name: Build
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: build
+      #     args: --release --all-features
+
+      # - name: Build
+      #   uses: davidgraeff/rust-musl-action@master
+      #   uses: actions/checkout@master
+      #   run: cargo build --release --target x86_64-unknown-linux-musl
 
       # - name: Run clippy
       #   uses: actions-rs/clippy-check@v1
@@ -73,20 +86,20 @@ jobs:
           aws-region: ap-northeast-1
 
       # デプロイする
-      - name: Deploy
-        run: |
+      # - name: Deploy
+      #   run: |
 
-          # SSHのセキュリティグループを開放する
-          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
-          #IP確認
-          echo ${{ steps.ip.outputs.ipv4 }}
+      #     # SSHのセキュリティグループを開放する
+      #     aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+      #     #IP確認
+      #     echo ${{ steps.ip.outputs.ipv4 }}
 
-          # SSH接続して、git pullする
-          echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
-          chmod 600 private_key
-          # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
-          rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
-          # 処理を実行
+      #     # SSH接続して、git pullする
+      #     echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
+      #     chmod 600 private_key
+      #     # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
+      #     rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
+      #     # 処理を実行
 
-          # SSHのセキュリティグループを閉じる
-          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+      #     # SSHのセキュリティグループを閉じる
+      #     aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
