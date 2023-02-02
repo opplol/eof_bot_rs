@@ -4,7 +4,7 @@ use log::info;
 use regex::Regex;
 use reqwest::{Client, Error};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::json;
 use std::env;
 
 // #[derive(Deserialize)]
@@ -13,16 +13,16 @@ use std::env;
 // }
 #[derive(Deserialize, Debug, Default)]
 struct BotRequest {
-    token: Option<String>,
+    _token: Option<String>,
     challenge: Option<String>,
-    team_id: Option<String>,
-    api_app_id: Option<String>,
+    _team_id: Option<String>,
+    _api_app_id: Option<String>,
     event: Option<SlackEvent>,
 }
 #[derive(Deserialize, Debug)]
 struct SlackEvent {
     text: String,
-    user: String,
+    _user: String,
     channel: String,
 }
 
