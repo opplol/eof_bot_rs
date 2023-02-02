@@ -60,11 +60,11 @@ jobs:
         x86_64-unknown-linux-gnux32
         i686-unknown-linux-gnu
         i686-unknown-linux-musl
-    - run: cargo check --workspace --release -vv
-    - run: cargo check --workspace --release -vv --target=x86_64-unknown-linux-musl
-    - run: cargo check --workspace --release -vv --target=x86_64-unknown-linux-gnux32
-    - run: cargo check --workspace --release -vv --target=i686-unknown-linux-gnu
-    - run: cargo check --workspace --release -vv --target=i686-unknown-linux-musl
+    - run: cargo build --workspace --release
+    - run: cargo build --workspace --release  --target=x86_64-unknown-linux-musl
+    - run: cargo build --workspace --release  --target=x86_64-unknown-linux-gnux32
+    - run: cargo build --workspace --release  --target=i686-unknown-linux-gnu
+    - run: cargo build --workspace --release  --target=i686-unknown-linux-musl
 
 
 # jobs:
