@@ -64,6 +64,10 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-1
+      - name: Get Host
+        id: ec_host
+        run: |
+          echo "ec_host=$(echo `aws ec2 describe-instances --region ap-northeast-1 --filters "Name=instance-id, Values=${{ secrets.EC2_INSTANCE_ID }}" --query 'Reservations[].Instances[].PublicDnsName' --output text`)" >> $GITHUB_OUTPUT
 
       # デプロイする
       - name: Deploy
@@ -78,7 +82,7 @@ jobs:
           echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
           chmod 600 private_key
           # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
-          rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/x86_64-unknown-linux-musl/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
+          sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/x86_64-unknown-linux-musl/release ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eof-bot
           # 処理を実行
 
           # SSHのセキュリティグループを閉じる
