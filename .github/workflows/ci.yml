@@ -48,6 +48,8 @@ jobs:
         toolchain: ${{ matrix.rust }}
 
     - name: Install musl-tools
+      continue-on-error: true
+
       run: |
         set -ex
         sudo apt-get update
