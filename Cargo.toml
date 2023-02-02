@@ -17,5 +17,3 @@ log = "0.4.17"
 regex = "1"
 
 
-[workspace]
-members = ["testenum"]
