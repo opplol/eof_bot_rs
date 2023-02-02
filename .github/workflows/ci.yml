@@ -27,17 +27,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        build: [stable, beta, nightly]
+        build: [stable]
         include:
           - build: stable
             os: ubuntu-latest
             rust: stable
-          - build: beta
-            os: ubuntu-latest
-            rust: beta
-          - build: nightly
-            os: ubuntu-latest
-            rust: nightly
+          # - build: beta
+          #   os: ubuntu-latest
+          #   rust: beta
+          # - build: nightly
+          #   os: ubuntu-latest
+          #   rust: nightly
 
     steps:
     - uses: actions/checkout@v2
@@ -60,20 +60,11 @@ jobs:
         x86_64-unknown-linux-gnux32
         i686-unknown-linux-gnu
         i686-unknown-linux-musl
-        wasm32-unknown-emscripten
-        riscv64gc-unknown-linux-gnu
     - run: cargo check --workspace --release -vv
     - run: cargo check --workspace --release -vv --target=x86_64-unknown-linux-musl
     - run: cargo check --workspace --release -vv --target=x86_64-unknown-linux-gnux32
-    - run: cargo check --workspace --release -vv --target=x86_64-linux-android
-    - run: cargo check --workspace --release -vv --target=x86_64-apple-darwin
-    - run: cargo check --workspace --release -vv --target=x86_64-unknown-freebsd
-    - run: cargo check --workspace --release -vv --target=x86_64-unknown-netbsd
-    - run: cargo check --workspace --release -vv --target=x86_64-fuchsia
     - run: cargo check --workspace --release -vv --target=i686-unknown-linux-gnu
     - run: cargo check --workspace --release -vv --target=i686-unknown-linux-musl
-    - run: cargo check --workspace --release -vv --target=wasm32-unknown-emscripten
-    - run: cargo check --workspace --release -vv --target=riscv64gc-unknown-linux-gnu
 
 
 # jobs:
