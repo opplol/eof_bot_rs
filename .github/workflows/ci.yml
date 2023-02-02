@@ -37,7 +37,7 @@ jobs:
       #     args: --release --all-features
 
       - name: Build binary
-        run: docker run --rm -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
+        run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
       #   run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
 
 
