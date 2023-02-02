@@ -6,94 +6,172 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
 jobs:
-  build:
+  rustfmt:
+    name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: ./.github/actions/install-rust
+      with:
+        toolchain: stable
+    - run: cargo fmt --all -- --check
 
-      - name: Cache Cargo
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+  check:
+    name: Check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [stable, beta, nightly]
+        include:
+          - build: stable
+            os: ubuntu-latest
+            rust: stable
+          - build: beta
+            os: ubuntu-latest
+            rust: beta
+          - build: nightly
+            os: ubuntu-latest
+            rust: nightly
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: 1.66
-          target: x86_64-unknown-linux-musl
-          override: true
-          components: rustfmt,clippy
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: ./.github/actions/install-rust
+      with:
+        toolchain: ${{ matrix.rust }}
+
+    - name: Install musl-tools
+      run: |
+        set -ex
+        sudo apt-get update
+        sudo apt-get install -y musl-tools
+    - run: >
+        rustup target add
+        x86_64-unknown-linux-musl
+        x86_64-unknown-linux-gnux32
+        x86_64-linux-android
+        x86_64-apple-darwin
+        x86_64-unknown-freebsd
+        x86_64-unknown-netbsd
+        x86_64-fuchsia
+        i686-unknown-linux-gnu
+        i686-unknown-linux-musl
+        wasm32-unknown-emscripten
+        riscv64gc-unknown-linux-gnu
+    - run: cargo check --workspace --release -vv
+    - run: cargo check --workspace --release -vv --target=x86_64-unknown-linux-musl
+    - run: cargo check --workspace --release -vv --target=x86_64-unknown-linux-gnux32
+    - run: cargo check --workspace --release -vv --target=x86_64-linux-android
+    - run: cargo check --workspace --release -vv --target=x86_64-apple-darwin
+    - run: cargo check --workspace --release -vv --target=x86_64-unknown-freebsd
+    - run: cargo check --workspace --release -vv --target=x86_64-unknown-netbsd
+    - run: cargo check --workspace --release -vv --target=x86_64-fuchsia
+    - run: cargo check --workspace --release -vv --target=i686-unknown-linux-gnu
+    - run: cargo check --workspace --release -vv --target=i686-unknown-linux-musl
+    - run: cargo check --workspace --release -vv --target=wasm32-unknown-emscripten
+    - run: cargo check --workspace --release -vv --target=riscv64gc-unknown-linux-gnu
 
 
-      # - name: Build
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: build
-      #     args: --release --all-features
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
 
-      - name: Build binary
-        run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
-      #   run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
+#       - name: Cache Cargo
+#         uses: actions/cache@v2
+#         with:
+#           path: |
+#             ~/.cargo/registry
+#             ~/.cargo/git
+#             target
+#           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
+#       - name: Install Rust
+#         uses: actions-rs/toolchain@v1
+#         with:
+#           toolchain: 1.66
+#           target: x86_64-unknown-linux-musl
+#           override: true
+#           components: rustfmt,clippy
 
 
-      # - name: Run clippy
-      #   uses: actions-rs/clippy-check@v1
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+#       # - name: Build
+#       #   uses: actions-rs/cargo@v1
+#       #   with:
+#       #     command: build
+#       #     args: --release --all-features
 
-      - name: Run rustfmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
+#       - name: Build binary
+#         run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
+#       #   run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
 
-      - name: Run test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: -- --show-output
-      # IPの取得
-      - name: Public IP
-        id: ip
-        uses: haythem/public-ip@v1.2
 
-      # AWS CLIをインストールする
-      - name: AWS CLI install
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
+#       # - name: Run clippy
+#       #   uses: actions-rs/clippy-check@v1
+#       #   with:
+#       #     token: ${{ secrets.GITHUB_TOKEN }}
 
-      # AWS CLIにキーを設定をする
-      - name: AWS set Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-1
+#       - name: Run rustfmt
+#         uses: actions-rs/cargo@v1
+#         with:
+#           command: fmt
+#           args: -- --check
 
-      # デプロイする
-      # - name: Deploy
-      #   run: |
+#       - name: Run test
+#         uses: actions-rs/cargo@v1
+#         with:
+#           command: test
+#           args: -- --show-output
+#       # IPの取得
+#       - name: Public IP
+#         id: ip
+#         uses: haythem/public-ip@v1.2
 
-      #     # SSHのセキュリティグループを開放する
-      #     aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
-      #     #IP確認
-      #     echo ${{ steps.ip.outputs.ipv4 }}
+#       # AWS CLIをインストールする
+#       - name: AWS CLI install
+#         run: |
+#           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#           unzip awscliv2.zip
+#           sudo ./aws/install --update
+#           aws --version
 
-      #     # SSH接続して、git pullする
-      #     echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
-      #     chmod 600 private_key
-      #     # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
-      #     rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
-      #     # 処理を実行
+#       # AWS CLIにキーを設定をする
+#       - name: AWS set Credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ap-northeast-1
 
-      #     # SSHのセキュリティグループを閉じる
-      #     aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+#       # デプロイする
+#       # - name: Deploy
+#       #   run: |
+
+#       #     # SSHのセキュリティグループを開放する
+#       #     aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+#       #     #IP確認
+#       #     echo ${{ steps.ip.outputs.ipv4 }}
+
+#       #     # SSH接続して、git pullする
+#       #     echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
+#       #     chmod 600 private_key
+#       #     # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
+#       #     rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
+#       #     # 処理を実行
+
+#       #     # SSHのセキュリティグループを閉じる
+#       #     aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
