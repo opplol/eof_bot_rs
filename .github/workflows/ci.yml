@@ -81,7 +81,7 @@ jobs:
           # SSH接続して、git pullする
           echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
           chmod 600 private_key
-          # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
+          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}"
           sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/x86_64-unknown-linux-musl/release ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eof-bot
           # 処理を実行
 
