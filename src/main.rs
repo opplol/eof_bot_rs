@@ -22,7 +22,7 @@ struct BotRequest {
 #[derive(Deserialize, Debug)]
 struct SlackEvent {
     text: String,
-    _user: String,
+    _user: Option<String>,
     channel: String,
 }
 
@@ -54,7 +54,16 @@ async fn hello() -> impl Responder {
 }
 #[post("echo")]
 async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+    info!("Requsted: {:?}", &req_body);
+    let body_json: BotRequest = serde_json::from_str(&req_body).unwrap();
+
+    info!("BodyJson: {:?}", &body_json);
+
+    if let Some(challenge) = &body_json.challenge {
+        return HttpResponse::Ok().body(challenge.to_string());
+    }
+
+    HttpResponse::Ok().body("Error")
 }
 async fn manual_hello() -> impl Responder {
     HttpResponse::Ok().body("Hey There")
@@ -186,6 +195,7 @@ async fn test(product: &str) -> Result<Vec<User>, Error> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let app_port = env::var("APP_PORT").unwrap_or_default();
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
 
@@ -197,7 +207,7 @@ async fn main() -> std::io::Result<()> {
             .service(eof)
             .route("hey", web::get().to(manual_hello))
     })
-    .bind(("0.0.0.0", 80))?
+    .bind(format!("0.0.0.0:{}", app_port))?
     .run()
     .await
 }
