@@ -197,7 +197,7 @@ async fn main() -> std::io::Result<()> {
             .service(eof)
             .route("hey", web::get().to(manual_hello))
     })
-    .bind(("localhost", 8080))?
+    .bind(("0.0.0.0", 80))?
     .run()
     .await
 }
