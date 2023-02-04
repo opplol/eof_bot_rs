@@ -62,10 +62,10 @@ async fn manual_hello() -> impl Responder {
 
 #[post("eof")]
 async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
+    info!("Requsted: {:?}", &req_body);
     if let Some(challenge) = &req_body.challenge {
         return HttpResponse::Ok().body(challenge.to_string());
     }
-    info!("Requsted: {:?}", &req_body);
 
     let event = &req_body.event.as_ref().unwrap();
 
