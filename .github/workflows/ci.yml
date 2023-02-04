@@ -12,8 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         target:
-        - x86_64-unknown-linux-musl
-        - x86_64-apple-darwin
+          - x86_64-unknown-linux-musl
+        # - x86_64-apple-darwin
         include:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
@@ -88,11 +88,6 @@ jobs:
           # SSHのセキュリティグループを閉じる
           aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
-
-
-
-
-
 # name: CI
 
 # env:
@@ -161,7 +156,6 @@ jobs:
 #     - run: cargo build --workspace --release  --target=i686-unknown-linux-gnu
 #     - run: cargo build --workspace --release  --target=i686-unknown-linux-musl
 
-
 # # jobs:
 # #   build:
 # #     runs-on: ubuntu-latest
@@ -186,7 +180,6 @@ jobs:
 # #           override: true
 # #           components: rustfmt,clippy
 
-
 # #       # - name: Build
 # #       #   uses: actions-rs/cargo@v1
 # #       #   with:
@@ -196,7 +189,6 @@ jobs:
 # #       - name: Build binary
 # #         run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
 # #       #   run: docker run --rm -u root -v `pwd`:/home/rust/src ekidd/rust-musl-builder cargo build --release
-
 
 # #       # - name: Run clippy
 # #       #   uses: actions-rs/clippy-check@v1
