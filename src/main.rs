@@ -1,3 +1,8 @@
+extern crate daemonize;
+use std::fs::File;
+
+use daemonize::Daemonize;
+
 use actix_web::middleware::Logger;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
 use log::info;
@@ -6,6 +11,8 @@ use reqwest::{Client, Error};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::env;
+extern crate getopts;
+use getopts::Options;
 
 // #[derive(Deserialize)]
 // struct EofQuery {
@@ -34,10 +41,25 @@ struct SlackTextSection {
 }
 
 #[derive(Serialize, Debug, Clone)]
+struct SlackTextMultiSection {
+    #[serde(rename = "type")]
+    type_me: String,
+    fields: Vec<SlackTextBody>,
+}
+
+#[derive(Serialize, Debug, Clone)]
 struct SlackTextBody {
     #[serde(rename = "type")]
     type_me: String,
     text: String,
+}
+
+#[derive(Serialize, Debug, Clone)]
+#[serde(untagged)]
+
+enum SlackTexts {
+    SlackTextMultiSection(SlackTextMultiSection),
+    SlackTextSection(SlackTextSection),
 }
 
 // {
@@ -93,20 +115,27 @@ async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
         }
     };
 
-    let slack_text: Vec<SlackTextSection> = users
+    let slack_text: Vec<SlackTexts> = users
         .iter()
         .map(|info| {
-            let body = SlackTextBody {
-                type_me: "mrkdwn".to_string(),
-                text: format!(
-                    "*Version : {}*\n EOL: {}\n lastVersion: {} \n",
-                    info.cycle, info.eol, info.latest
-                ),
-            };
-            SlackTextSection {
+            let body: Vec<SlackTextBody> = vec![
+                SlackTextBody {
+                    type_me: "mrkdwn".to_string(),
+                    text: format!("*Version*\n {}", info.cycle),
+                },
+                SlackTextBody {
+                    type_me: "mrkdwn".to_string(),
+                    text: format!("*EOL* \n {}", info.eol),
+                },
+                SlackTextBody {
+                    type_me: "mrkdwn".to_string(),
+                    text: format!("*lastVersion* \n {}", info.latest),
+                },
+            ];
+            SlackTexts::SlackTextMultiSection(SlackTextMultiSection {
                 type_me: "section".to_string(),
-                text: body,
-            }
+                fields: body,
+            })
         })
         .collect();
     info!("{:?}", slack_text);
@@ -114,15 +143,15 @@ async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
     // let test = test(&info.app).await.unwrap_or_default();
     println!("{:?}", users);
 
-    let title: Vec<SlackTextSection> = vec![SlackTextSection {
+    let title: Vec<SlackTexts> = vec![SlackTexts::SlackTextSection(SlackTextSection {
         type_me: "section".to_string(),
         text: SlackTextBody {
             type_me: "plain_text".to_string(),
             text: format!("{} EOF INFO", &con_app_name),
         },
-    }];
+    })];
 
-    let footer: Vec<SlackTextSection> = vec![SlackTextSection {
+    let footer: Vec<SlackTexts> = vec![SlackTexts::SlackTextSection(SlackTextSection {
         type_me: "section".to_string(),
         text: SlackTextBody {
             type_me: "mrkdwn".to_string(),
@@ -131,9 +160,9 @@ async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
                 &con_app_name
             ),
         },
-    }];
+    })];
 
-    let all_text = [title, slack_text, footer].concat();
+    let all_text: Vec<SlackTexts> = [title, slack_text, footer].concat();
     let gist_body = json!({
         "channel": Some(&event.channel).unwrap(),
         "text": format!("{} EOF INFO", &con_app_name),
@@ -157,6 +186,8 @@ async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
     // ]
 
     });
+    info!("Slack Body: {}", gist_body);
+    info!("Slack Body: {:?}", gist_body);
 
     let mytoken = env::var("SLACK_TOKEN").unwrap_or_default();
     let request_url = "https://slack.com/api/chat.postMessage";
@@ -194,8 +225,7 @@ async fn test(product: &str) -> Result<Vec<User>, Error> {
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let app_port = env::var("APP_PORT").unwrap_or_default();
+async fn app_server(port: String) -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "info");
     env_logger::init();
 
@@ -207,7 +237,55 @@ async fn main() -> std::io::Result<()> {
             .service(eof)
             .route("hey", web::get().to(manual_hello))
     })
-    .bind(format!("0.0.0.0:{}", app_port))?
+    .bind(format!("0.0.0.0:{}", port))?
     .run()
     .await
+}
+
+fn print_usage(program: &str, opts: Options) {
+    let brief = format!("Usage: {} FILE [options]", program);
+    print!("{}", opts.usage(&brief));
+}
+fn main() {
+    let stdout = File::create("./log/daemon.out").unwrap();
+    let stderr = File::create("./log/daemon.err").unwrap();
+    let args: Vec<String> = env::args().collect();
+    let program = args[0].clone();
+
+    let mut opts = Options::new();
+    opts.optopt("p", "", "set server port", "PORT");
+    opts.optflag("d", "", "Run server with daemonize");
+
+    let matches = match opts.parse(&args[1..]) {
+        Ok(m) => m,
+        Err(f) => {
+            print_usage(&program, opts);
+            panic!("{}", f.to_string())
+        }
+    };
+
+    let port = match matches.opt_str("p") {
+        Some(port) => port,
+        None => "80".to_string(),
+    };
+    if matches.opt_present("d") {
+        let daemonize = Daemonize::new()
+            .pid_file("./pid/server.pid")
+            .working_directory("./pid")
+            .stdout(stdout)
+            .stderr(stderr)
+            .exit_action(|| println!("Executed before master process exits"))
+            .privileged_action(|| "Executed before drop privileges");
+
+        match daemonize.start() {
+            Ok(v) => {
+                println!("{:?}", v);
+                println!("Success, daemonized");
+                app_server(port).unwrap();
+            }
+            Err(e) => eprintln!("Error, {}", e),
+        }
+        return;
+    }
+    app_server(port).unwrap()
 }
