@@ -1,0 +1,11 @@
+[package]
+name = "arg_test"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gestalt_ratio = "0.2.1"
+getopts = "0.2"
+strsim = "0.10.0"
