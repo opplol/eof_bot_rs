@@ -83,7 +83,7 @@ jobs:
           chmod 600 private_key
           sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/x86_64-unknown-linux-musl/release ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eof-bot
           sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' sh/server_run.sh ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eof-bot/release/
-          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }} -i private_key "cd ~/eof-bot/release; bash SLACK_TOKEN=`echo ${SLACK_TOKEN}` ./server_run.sh"
+          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }} -i private_key "cd ~/eof-bot/release; export SLACK_TOKEN=`echo ${SLACK_TOKEN}`; bash ./server_run.sh"
           # 処理を実行
 
           # SSHのセキュリティグループを閉じる
