@@ -73,8 +73,8 @@ pub async fn manual_hello() -> impl Responder {
     HttpResponse::Ok().body("Hey There")
 }
 
-#[post("eof")]
-async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
+#[post("eol")]
+async fn eol(req_body: web::Json<BotRequest>) -> impl Responder {
     info!("Requsted: {:?}", &req_body);
     if let Some(challenge) = &req_body.challenge {
         return HttpResponse::Ok().body(challenge.to_string());
@@ -134,7 +134,7 @@ async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
         return HttpResponse::Ok().body("");
     }
 
-    let eol_res = match communicator::lib_eof(&formated_text).await {
+    let eol_res = match communicator::lib_eol(&formated_text).await {
         Ok(r) => r,
         Err(err) => {
             info!("{}", err.to_string());
@@ -227,7 +227,7 @@ async fn eof(req_body: web::Json<BotRequest>) -> impl Responder {
         type_me: "section".to_string(),
         text: SlackTextBody {
             type_me: "plain_text".to_string(),
-            text: format!("{} EOF INFO", &formated_text),
+            text: format!("{} EOL INFO", &formated_text),
         },
     })];
 

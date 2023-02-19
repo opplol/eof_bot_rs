@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Eof {
+pub struct Eol {
     pub cycle: String,
     pub eol: serde_json::Value,
     pub latest: String,
@@ -12,7 +12,7 @@ pub struct Eof {
     pub lts: serde_json::Value,
 }
 
-pub async fn lib_eof(product: &str) -> Result<Vec<Eof>, Error> {
+pub async fn lib_eol(product: &str) -> Result<Vec<Eol>, Error> {
     let request_url = format!("https://endoflife.date/api/{}.json", product);
     println!("{}", request_url);
     let response = match reqwest::get(&request_url).await {
@@ -31,7 +31,7 @@ pub async fn lib_eof(product: &str) -> Result<Vec<Eof>, Error> {
     println!("RESPONSE :: {:?}", body);
 
     // let json_body: serde_json::Value = serde_json::from_str(&response).unwrap();
-    let json_body: Vec<Eof> = serde_json::from_str(&body).unwrap();
+    let json_body: Vec<Eol> = serde_json::from_str(&body).unwrap();
 
     println!("{:?} :: {:?}", body, &json_body);
     Ok(json_body)

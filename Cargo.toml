@@ -1,5 +1,5 @@
 [package]
-name = "eof_bot_rs"
+name = "eol_bot_rs"
 version = "0.1.0"
 edition = "2021"
 

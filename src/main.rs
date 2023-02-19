@@ -22,7 +22,7 @@ async fn app_server(port: String) -> std::io::Result<()> {
             .wrap(Logger::default())
             .service(controller::hello)
             .service(controller::echo)
-            .service(controller::eof)
+            .service(controller::eol)
             .route("hey", web::get().to(controller::manual_hello))
     })
     .bind(format!("0.0.0.0:{}", port))?

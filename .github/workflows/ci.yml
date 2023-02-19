@@ -81,9 +81,9 @@ jobs:
           # SSH接続して、git pullする
           echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
           chmod 600 private_key
-          sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/x86_64-unknown-linux-musl/release ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eof-bot
-          sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' sh/server_run.sh ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eof-bot/release/
-          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }} -i private_key "cd ~/eof-bot/release; export SLACK_TOKEN=`echo ${SLACK_TOKEN}`; bash ./server_run.sh"
+          sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/x86_64-unknown-linux-musl/release ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eol-bot
+          sudo rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' sh/server_run.sh ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }}:~/eol-bot/release/
+          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ steps.ec_host.outputs.ec_host }} -i private_key "cd ~/eol-bot/release; export SLACK_TOKEN=`echo ${SLACK_TOKEN}`; bash ./server_run.sh"
           # 処理を実行
 
           # SSHのセキュリティグループを閉じる
@@ -243,7 +243,7 @@ jobs:
 # #       #     echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
 # #       #     chmod 600 private_key
 # #       #     # ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd React && git pull origin main"
-# #       #     rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eof-bot
+# #       #     rsync -rv -e 'ssh -oStrictHostKeyChecking=no -i private_key' target/release ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }}:~/eol-bot
 # #       #     # 処理を実行
 
 # #       #     # SSHのセキュリティグループを閉じる
