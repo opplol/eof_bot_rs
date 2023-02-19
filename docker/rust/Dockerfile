@@ -5,6 +5,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rustup component add rust-analyzer rust-src rustfmt clippy && \
+    rustup toolchain install nightly --component rust-analyzer-preview && \
     cargo install cargo-edit cargo-watch && \
     rustup target add wasm32-unknown-unknown && \
     cargo install --locked trunk
