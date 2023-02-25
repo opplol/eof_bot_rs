@@ -8,7 +8,8 @@ https://endoflife.date/
 
 # DEMO
 
-WIP
+![eol](https://user-images.githubusercontent.com/15142826/221349999-5ab3ff52-0efc-4e2e-b6a9-617e353d57e5.gif)
+
 
 # Features
 ## Slackでのメッセージ
