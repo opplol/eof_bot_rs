@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/opplol/eof_bot_rs/actions/workflows/ci.yml/badge.svg)](https://github.com/opplol/eof_bot_rs/actions/workflows/ci.yml)
 
-SlackBotを利用して、ライブラリーのEOL（End Of Life）を確認できる。
-EOL情報は以下のAPIから取得している。
+SlackBotを利用して、ライブラリーのEOL（End Of Life）を確認できる。<br/>
+EOL情報は以下のAPIから取得している。<br/>
 https://endoflife.date/
 
 # DEMO
