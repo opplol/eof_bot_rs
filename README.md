@@ -1,33 +1,62 @@
-# WIP eof_slack_bot with rust_actix
-# rust-template-for-vscode-remotecontainers
+# eol_slack_bot with rust_actix
 
-[![CI](https://github.com/schrosis/rust-template-for-vscode-remotecontainers/actions/workflows/ci.yml/badge.svg)](https://github.com/schrosis/rust-template-for-vscode-remotecontainers/actions/workflows/ci.yml)
+[![CI](https://github.com/opplol/eof_bot_rs/actions/workflows/ci.yml/badge.svg)](https://github.com/opplol/eof_bot_rs/actions/workflows/ci.yml)
 
-Rust template development environment using VSCode's RemoteContainers
+SlackBotを利用して、ライブラリーのEOL（End Of Life）を確認できる。
 
-## Requirements
+# DEMO
 
-- [Docker](https://www.docker.com/)
-- [Visual Studio Code](https://azure.microsoft.com/ja-jp/products/visual-studio-code/)
-- [Remote - Containers(VSCode extension)](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+WIP
 
-## Usage
+# Features
+## Slackでのメッセージ
+`@EOL_BOT {Library name}`<br />
+ex) `@EOF_BOT {rails}`<br />
+Will return EOL info
+![image](https://user-images.githubusercontent.com/15142826/221346155-2cdc6aab-30f8-489f-8ada-4a035568b5ba.png)
 
-Run `Remote-containers: Reopen in Container` from the command palette ( `⌘` + `⇧` + `P` ).
-And if you see "Dev Container: Rust Template" in the bottom left corner, you're good to go!
+`@EOL_BOT {Similar name}`<br />
+ex) `@EOF_BOT {amazon}`<br />
+Will return suggest library names
+![image](https://user-images.githubusercontent.com/15142826/221346235-a3fdad40-61b5-4165-99a8-641dc74fa77a.png)
 
-## The following are installed.
+# Requirement
 
-- Docker image
-    - rust:1.66-buster
-- CLI tools
-    - git
-    - cargo-edit
-    - cargo-watch
-- VSCode extensions
-    - [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer)
-    - [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb)
-    - [Better TOML](https://marketplace.visualstudio.com/items?itemName=bungcip.better-toml)
-    - [crates](https://marketplace.visualstudio.com/items?itemName=serayuzgur.crates)
-    - [EditorConfig for VS Code](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
+- Production
+  * Os：Linux
+    実行可能なバイナリーファイルをデプロイする。
+- Dev
+  * Docker
+  * VsCode
+
+# Installation For Dev
+
+git clone git@github.com:opplol/eof_bot_rs.git eof_bot_rs_tut
+
+cd eof_bot_rs_tut
+
+code .
+
+
+# Usage
+## Prepare for Slack
+
+WIP
+
+
+## Run Web Server
+docker-compose up<br />
+
+docker-compose exec -it -e SLACK-TOKEN={slack-oauth-token} rust  cargo run -- -p 8080
+
+# Note
+
+こちらのプロジェクトはRust学習のため作成したプロジェクトです。
+
+# Author
+* opplol(Lee Sang Ho)
+* colra03@gmail.com
+
+# License
+"eol_slack_bot" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
 
