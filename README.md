@@ -3,6 +3,8 @@
 [![CI](https://github.com/opplol/eof_bot_rs/actions/workflows/ci.yml/badge.svg)](https://github.com/opplol/eof_bot_rs/actions/workflows/ci.yml)
 
 SlackBotを利用して、ライブラリーのEOL（End Of Life）を確認できる。
+EOL情報は以下のAPIから取得している。
+https://endoflife.date/
 
 # DEMO
 
@@ -60,3 +62,5 @@ docker-compose exec -it -e SLACK-TOKEN={slack-oauth-token} rust  cargo run -- -p
 # License
 "eol_slack_bot" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
 
+# Thanks
+Thank [endoflife-date](https://endoflife.date/) for your wonderful API
